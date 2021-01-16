@@ -87,3 +87,12 @@ Create an AWS S3 bucket. Set the config values for environment variables prefixe
 - Create an image: `docker build -t udagram-frontend .`
 - Test the image: `docker run --env-file ../.env -p 8100:8100 udagram-frontend`
 - Check http://localhost:8100
+
+### Microservices
+- Create feed API an image: `docker build -t udagram-feed .`
+- Test the image: `docker run --env-file ../.env -p 8080:8080 udagram-feed`
+- Check http://localhost:8080/api/v0/
+- Create users API an image: `docker build -t udagram-users .`
+- Test the image: `docker run --env-file ../.env -p 8100:8080 udagram-users`
+- Check http://localhost:8080/api/v0/
+- **NOTE**: Port 8080 is specified in Dockerfiles of each API.
