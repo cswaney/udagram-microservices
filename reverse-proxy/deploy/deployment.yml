@@ -1,0 +1,21 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: udagram-reverse-proxy
+  labels:
+    app: udagram-reverse-proxy
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: udagram-reverse-proxy
+  template:
+    metadata:
+      labels:
+        app: udagram-reverse-proxy
+    spec:
+      containers:
+      - name: udagram-reverse-proxy
+        image: cswaney/udagram-reverse-proxy
+        ports:
+        - containerPort: 8080
