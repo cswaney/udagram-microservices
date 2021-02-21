@@ -6,6 +6,7 @@ const router: Router = Router();
 router.use('/feed', FeedRouter);
 
 router.get('/', async (req: Request, res: Response) => {
+  console.log(new Date().toLocaleDateString() + `: GET request to /api/v0/`)
   res.send(`V0`);
 });
 
