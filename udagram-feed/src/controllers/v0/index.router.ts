@@ -1,3 +1,4 @@
+import {v4 as uuidv4} from 'uuid';
 import {Router, Request, Response} from 'express';
 import {FeedRouter} from './feed/routes/feed.router';
 
@@ -6,7 +7,8 @@ const router: Router = Router();
 router.use('/feed', FeedRouter);
 
 router.get('/', async (req: Request, res: Response) => {
-  console.log(new Date().toLocaleDateString() + `: GET request to /api/v0/`)
+  let pid = uuidv4();
+  console.log(new Date().toLocaleString() + `: ${pid} request GET /api/v0/`);
   res.send(`V0`);
 });
 

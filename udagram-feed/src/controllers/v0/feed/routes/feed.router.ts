@@ -1,3 +1,4 @@
+import {v4 as uuidv4 } from 'uuid';
 import {Router, Request, Response} from 'express';
 import {FeedItem} from '../models/FeedItem';
 import {NextFunction} from 'connect';
@@ -28,14 +29,15 @@ export function requireAuth(req: Request, res: Response, next: NextFunction) {
 
 // Get all feed items
 router.get('/', async (req: Request, res: Response) => {
-  console.log(new Date().toLocaleDateString() + `: GET request to /api/v0/feed/`)
+  let pid = uuidv4();
+  console.log(new Date().toLocaleString() + `: ${pid} request GET /api/v0/feed/`);
   const items = await FeedItem.findAndCountAll({order: [['id', 'DESC']]});
   items.rows.map((item) => {
     if (item.url) {
       item.url = AWS.getGetSignedUrl(item.url);
     }
   });
-  console.log(new Date().toLocaleDateString() + `: finished processing response`)
+  console.log(new Date().toLocaleString() + `: ${pid} finished processing`);
   res.send(items);
 });
 
@@ -43,7 +45,10 @@ router.get('/', async (req: Request, res: Response) => {
 router.get('/:id',
     async (req: Request, res: Response) => {
       const {id} = req.params;
+      let pid = uuidv4();
+      console.log(new Date().toLocaleString() + `: ${pid} request GET /api/v0/feed/${id}`);      
       const item = await FeedItem.findByPk(id);
+      console.log(new Date().toLocaleString() + `: ${pid} finished processing`);
       res.send(item);
     });
 
