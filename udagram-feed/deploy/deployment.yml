@@ -1,22 +1,30 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  labels:
-    service: udagram-feed
   name: udagram-feed
+  labels:
+    app: udagram-feed
 spec:
   replicas: 2
   selector:
     matchLabels:
-      service: udagram-feed
+      app: udagram-feed
   template:
     metadata:
       labels:
-        service: udagram-feed
+        app: udagram-feed
     spec:
+      # livenessProbe:
+      #   httpGet:
+      #     path: /health
+      #     port: 8080
+      #   initialDelaySeconds: 3
+      #   periodSeconds: 3
       containers:
-      - image: cswaney/udagram-feed:latest
-        name: udagram-feed
+      - name: udagram-feed
+        image: cswaney/udagram-feed:latest
+        ports:
+        - containerPort: 8080
         env:
         - name: URL
           valueFrom:
