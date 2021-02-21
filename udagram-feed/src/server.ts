@@ -32,13 +32,11 @@ import {V0_FEED_MODELS} from './controllers/v0/model.index';
 
   // Root URI call
   app.get( '/', async ( req, res ) => {
-    console.log(new Date().toLocaleDateString() + `: GET request to /`)
     res.send( '/api/v0/' );
   } );
 
   // Liveness probe
   app.get("/health", (req, res, next) => {
-    console.log(new Date().toLocaleDateString() + `: GET request to /health`)
     res.status(200).send("Healthy");
   });
 
