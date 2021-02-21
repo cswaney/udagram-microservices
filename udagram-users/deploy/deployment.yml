@@ -2,21 +2,29 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   labels:
-    service: udagram-users
+    app: udagram-users
   name: udagram-users
 spec:
   replicas: 1
   selector:
     matchLabels:
-      service: udagram-users
+      app: udagram-users
   template:
     metadata:
       labels:
-        service: udagram-users
+        app: udagram-users
     spec:
       containers:
       - image: cswaney/udagram-users:latest
         name: udagram-users
+        ports:
+        - containerPort: 8080
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 8080
+          initialDelaySeconds: 3
+          periodSeconds: 3
         env:
         - name: URL
           valueFrom:
