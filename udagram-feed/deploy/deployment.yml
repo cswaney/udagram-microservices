@@ -14,12 +14,12 @@ spec:
       labels:
         app: udagram-feed
     spec:
-      # livenessProbe:
-      #   httpGet:
-      #     path: /health
-      #     port: 8080
-      #   initialDelaySeconds: 3
-      #   periodSeconds: 3
+      livenessProbe:
+        httpGet:
+          path: /health
+          port: 8080
+        initialDelaySeconds: 3
+        periodSeconds: 3
       containers:
       - name: udagram-feed
         image: cswaney/udagram-feed:latest
