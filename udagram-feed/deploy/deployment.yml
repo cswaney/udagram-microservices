@@ -17,6 +17,7 @@ spec:
       containers:
       - name: udagram-feed
         image: cswaney/udagram-feed:latest
+        imagePullPolicy: Always
         resources:
           requests:
             cpu: 200m
@@ -24,12 +25,12 @@ spec:
             cpu: 500m
         ports:
         - containerPort: 8080
-        livenessProbe:
-          httpGet:
-            path: /health
-            port: 8080
-          initialDelaySeconds: 3
-          periodSeconds: 3
+        # livenessProbe:
+        #   httpGet:
+        #     path: /health
+        #     port: 8080
+        #   initialDelaySeconds: 3
+        #   periodSeconds: 3
         env:
         - name: URL
           valueFrom:
