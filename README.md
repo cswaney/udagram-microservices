@@ -85,7 +85,7 @@ Create an AWS S3 bucket. Set the config values for environment variables prefixe
 
 ### Frontend
 - Create an image: `docker build -t udagram-frontend .`
-- Test the image: `docker run --env-file ../.env -p 8100:8100 udagram-frontend`
+- Test the image: `docker run --env-file ../.env -p 8100:80 udagram-frontend`
 - Check http://localhost:8100
 
 ### Microservices
@@ -93,6 +93,7 @@ Create an AWS S3 bucket. Set the config values for environment variables prefixe
 - Test the image: `docker run --env-file ../.env -p 8080:8080 udagram-feed`
 - Check http://localhost:8080/api/v0/
 - Create users API an image: `docker build -t udagram-users .`
-- Test the image: `docker run --env-file ../.env -p 8100:8080 udagram-users`
+- Test the image: `docker run --env-file ../.env -p 8080:8080 udagram-users`
 - Check http://localhost:8080/api/v0/
 - **NOTE**: Port 8080 is specified in Dockerfiles of each API.
+- **NOTE**: The app won't work with this setup locally b/c APIs use the same port. You would need to change the frontend code to use two different URLs or run a reverse proxy locally to and have the reverse proxy take care of diverting requests to appropriate URL (and change one of the ports to something else like 8200:8080)
