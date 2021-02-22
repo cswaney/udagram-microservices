@@ -14,6 +14,6 @@ spec:
   selector:
     app: udagram-reverse-proxy
   sessionAffinity: None
-  type: ClusterIP
+  type: LoadBalancer
 status:
   loadBalancer: {}

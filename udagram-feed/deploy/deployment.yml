@@ -17,6 +17,11 @@ spec:
       containers:
       - name: udagram-feed
         image: cswaney/udagram-feed:latest
+        resources:
+          requests:
+            cpu: 200m
+          limits:
+            cpu: 500m
         ports:
         - containerPort: 8080
         livenessProbe:
