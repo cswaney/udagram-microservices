@@ -1,32 +1,13 @@
 # Udagram Image Filtering Application
-
 Udagram is a simple cloud application developed alongside the Udacity Cloud Engineering Nanodegree. It allows users to register and log into a web client, post photos to the feed, and process photos using an image filtering microservice.
 
 The project is split into two parts:
 1. Frontend - Angular web application built with Ionic Framework
 2. Backend RESTful API - Node-Express application
 
-## Getting Started
-> _tip_: it's recommended that you start with getting the backend API running since the frontend web application depends on the API.
+## Setup
 
-### Prerequisite
-1. The depends on the Node Package Manager (NPM). You will need to download and install Node from [https://nodejs.com/en/download](https://nodejs.org/en/download/). This will allow you to be able to run `npm` commands.
-2. Environment variables will need to be set. These environment variables include database connection details that should not be hard-coded into the application code.
-#### Environment Script
-A file named `set_env.sh` has been prepared as an optional tool to help you configure these variables on your local development environment.
- 
-We do _not_ want your credentials to be stored in git. After pulling this `starter` project, run the following command to tell git to stop tracking the script in git but keep it stored locally. This way, you can use the script for your convenience and reduce risk of exposing your credentials.
-`git rm --cached set_env.sh`
-
-Afterwards, we can prevent the file from being included in your solution by adding the file to our `.gitignore` file.
-
-### Database
-Create a PostgreSQL database either locally or on AWS RDS. Set the config values for environment variables prefixed with `POSTGRES_` in `set_env.sh`.
-
-### S3
-Create an AWS S3 bucket. Set the config values for environment variables prefixed with `AWS_` in `set_env.sh`.
-
-### Backend API
+#### Backend API
 * To download all the package dependencies, run the command from the directory `udagram-api/`:
     ```bash
     npm install .
@@ -37,7 +18,7 @@ Create an AWS S3 bucket. Set the config values for environment variables prefixe
     ```
 * You can visit `http://localhost:8080/api/v0/feed` in your web browser to verify that the application is running. You should see a JSON payload. Feel free to play around with Postman to test the API's.
 
-### Frontend App
+#### Frontend App
 * To download all the package dependencies, run the command from the directory `udagram-frontend/`:
     ```bash
     npm install .
@@ -56,44 +37,121 @@ Create an AWS S3 bucket. Set the config values for environment variables prefixe
     ```
 * You can visit `http://localhost:8100` in your web browser to verify that the application is running. You should see a web interface.
 
-## Tips
-1. Take a look at `udagram-api` -- does it look like we can divide it into two modules to be deployed as separate microservices?
-2. The `.dockerignore` file is included for your convenience to not copy `node_modules`. Copying this over into a Docker container might cause issues if your local environment is a different operating system than the Docker image (ex. Windows or MacOS vs. Linux).
-3. It's useful to "lint" your code so that changes in the codebase adhere to a coding standard. This helps alleviate issues when developers use different styles of coding. `eslint` has been set up for TypeScript in the codebase for you. To lint your code, run the following:
-    ```bash
-    npx eslint --ext .js,.ts src/
-    ```
-    To have your code fixed automatically, run
-    ```bash
-    npx eslint --ext .js,.ts src/ --fix
-    ```
-4. Over time, our code will become outdated and inevitably run into security vulnerabilities. To address them, you can run:
-    ```bash
-    npm audit fix
-    ```
-5. In `set_env.sh`, environment variables are set with `export $VAR=value`. Setting it this way is not permanent; every time you open a new terminal, you will have to run `set_env.sh` to reconfigure your environment variables. To verify if your environment variable is set, you can check the variable with a command like `echo $POSTGRES_USERNAME`.
 
 
-# Steps
+## Local Deployment
+These instructions are incomplete because they don't setup a reverse proxy locally, but the frontend expects a single API endpoint. You can still check that the APIs work as expected and that the frontend deploys.
 
-## Docker
+#### Create Docker images
+```bash
+docker build -t <DOCKER_USERNAME>/udagram-feed udagram-feed
+docker build -t <DOCKER_USERNAME>/udagram-users udagram-users
+docker build -t <DOCKER_USERNAME>/udagram-frontend udagram-frontend
+```
+#### Deploy APIs
+- Note that port `8080` is specified by the Docker files and corresponds to the *second* `8080` in `8080:8080`. You can change one of the specified ports (e.g., `8200:8080`) to run the APIs concurrently.
+```bash
+docker run --env-file ../.env -p 8080:8080 udagram-feed
+docker run --env-file ../.env -p 8200:8080 udagram-users
+```
+- Check the deployment:
+```bash
+curl localhost:8080/api/v0/feed  # {"count": 0,"rows":[]}
+curl localhost:8200/api/v0/users/test-user@gmail.com  # {"email":"test-user@gmail.com", ...}
+```
 
-### API
-- Create an image: `docker build -t udagram-api .`
-- Test the image: `docker run --env-file ../.env -p 8080:8080 udagram-api`
-- Check http://localhost:8080/api/v0/
+#### Deploy frontend
+- Note that `8100:80` is the default port for the server.
+```bash
+docker run --env-file ../.env -p 8100:80 udagram-frontend
+```
+- Check [localhost:8100](localhost:8100) to check the deployment.
 
-### Frontend
-- Create an image: `docker build -t udagram-frontend .`
-- Test the image: `docker run --env-file ../.env -p 8100:80 udagram-frontend`
-- Check http://localhost:8100
 
-### Microservices
-- Create feed API an image: `docker build -t udagram-feed .`
-- Test the image: `docker run --env-file ../.env -p 8080:8080 udagram-feed`
-- Check http://localhost:8080/api/v0/
-- Create users API an image: `docker build -t udagram-users .`
-- Test the image: `docker run --env-file ../.env -p 8080:8080 udagram-users`
-- Check http://localhost:8080/api/v0/
-- **NOTE**: Port 8080 is specified in Dockerfiles of each API.
-- **NOTE**: The app won't work with this setup locally b/c APIs use the same port. You would need to change the frontend code to use two different URLs or run a reverse proxy locally to and have the reverse proxy take care of diverting requests to appropriate URL (and change one of the ports to something else like 8200:8080)
+## AWS Deployment
+It's suggested to setup the repository with TravisCI, but you can also push Docker images manually from the command line.
+
+#### Create an Amazon-EKS Cluster
+Follow this [tutorial](https://docs.aws.amazon.com/eks/latest/userguide/getting-started-console.html).
+
+#### Install the Kubernetes Metrics Server
+Follow these [instructions](https://docs.aws.amazon.com/eks/latest/userguide/metrics-server.html).
+
+#### Deploy environment variables (secrets and configmaps)
+```bash
+kubectl apply -f aws-secret.yml
+kubectl apply -f env-secret.yml
+kubectl apply -f env-configmap.yml
+kubectl get secrets  # check deployment
+kubectl get configmaps  # check deployment
+```
+
+#### Deploy the API
+```bash
+kubectl apply -f udagram-feed/deploy/deployment.yml
+kubectl apply -f udagram-feed/deploy/service.yml
+kubectl apply -f udagram-users/deploy/deployment.yml
+kubectl apply -f udagram-users/deploy/service.yml
+```
+- Add horizontal auto-scaling:
+```bash
+kubectl autoscale deployment udagram-feed --min=1 --max=2 --cpu-percent=90
+kubectl autoscale deployment udagram-users --min=1 --max=2 --cpu-percent=90
+kubectl get hpa  # confirm deployment
+```
+- HPA requires the `deployment.yml` files to specify `resources`.
+- Check the deployment is working:
+```bash
+kubectl get pods  # check deployment
+kubectl exec -it <FEED_API_POD> -- /bin/bash
+curl <SERVICE_NAME>:8080/api/v0  # check functionality
+kubectl exec -it <USERS_API_POD> -- /bin/bash
+curl <SERVICE_NAME>:8080/api/v0  # check functionality
+```
+
+#### Deploy the reverse proxy
+- Setting the service `type` to `LoadBalancer` will generate a public IP address.
+```bash
+kubectl apply -f udagram-reverse-proxy/deploy/deployment.yml
+kubectl apply -f udagram-reverse-proxy/deploy/service.yml
+```
+- Get the public/external IP address and check the deployment:
+```bash
+kubectl get services  # list external IP
+curl <EXTERNAL-IP>:8080/api/v0/users/test-user@gmail.com
+curl <EXTERNAL-IP>:8080/api/v0/feed/
+```
+
+#### Deploy the frontend
+- Specify the public IP address in the frontend `env` files and update the Docker image. If you have TravisCI setup, then you just need to update the files, commit the changes, and wait for the build to complete. Otherwise:
+```bash
+docker build -t <DOCKER_USERNAME>/udagram-frontend udagram-frontend
+docker push <DOCKER_USERNAME>/udagram-frontend:latest
+```
+- This could also be done with environment variables / a configmap, but the public IP address changes whenever the reverse proxy *service* is deployed. For this reason, you should avoid re-deploying the service, if possible—just re-deploy the deployment if you need to modify the reverse proxy configuration).
+- When the build completes, deploy:
+```bash
+kubectl apply -f udagram-frontend/deploy/deployment.yml
+kubectl apply -f udagram-frontend/deploy/service.yml
+```
+- Setting the service `type` to `LoadBalancer` will generate a public IP address. The API needs to know this address in order to allow traffic from the frontend. Update `URL` in `env-configmap.yml`, re-deploy the configmap, and then re-deploy the APIs (so they have access to the new URL value):
+```bash
+kubectl delete configmap env-config
+kubectl apply -f env-configmap.yml
+kubectl delete deployment udagram-feed
+kubectl delete deployment udagram-users
+kubectl apply -f udagram-feed/deploy/deployment.yml
+kubectl apply -f udagram-users/deploy/deployment.yml
+```
+
+#### Check Logs
+- See activity on APIs:
+```bash
+kubectl get pods  # select an API pod
+kubectl logs <POD>
+```
+- Debug deployment:
+```bash
+kubectl get pods
+kubectl describe pod <POD>
+```
